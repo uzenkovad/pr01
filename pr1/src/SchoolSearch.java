@@ -20,7 +20,6 @@ class Student {
         this.teacherFirstName = teacherFirstName.toUpperCase();
     }
 
-    // Метод для виведення тільки прізвища, ім'я та автобусного маршруту
     public String getBusInfo() {
         return firstName + " " + lastName + " (Bus Route: " + bus + ")";
     }
@@ -100,22 +99,40 @@ public class SchoolSearch {
         printSearchTime(startTime, endTime);
     }
 
-    // Метод для пошуку студента за прізвищем і виведення автобусного маршруту
-    public static void findByLastNameWithBus(List<Student> students, String lastName) {
+    public static void findByLastNameAndBus(List<Student> students, String lastName, int bus) {
         long startTime = System.nanoTime();
         Set<Student> uniqueStudents = new HashSet<>();
         boolean found = false;
         for (Student s : students) {
-            if (s.lastName.equalsIgnoreCase(lastName) && uniqueStudents.add(s)) {
+            if (s.lastName.equalsIgnoreCase(lastName) && s.bus == bus && uniqueStudents.add(s)) {
                 System.out.println(s.getBusInfo());
                 found = true;
             }
         }
         if (!found) {
-            System.out.println("Student with last name " + lastName + " not found.");
+            System.out.println("No students with last name " + lastName + " found on bus route " + bus + ".");
         }
         long endTime = System.nanoTime();
         printSearchTime(startTime, endTime);
+    }
+
+    public static void findByLastNameInteractive(List<Student> students, String lastName, Scanner scanner) {
+        System.out.print("Would you like to find by bus route? (yes/no): ");
+        String response = scanner.nextLine().trim().toLowerCase();
+
+        if (response.equals("yes")) {
+            System.out.print("Enter bus route number: ");
+            try {
+                int busRoute = Integer.parseInt(scanner.nextLine().trim());
+                findByLastNameAndBus(students, lastName, busRoute);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid bus route number format.");
+            }
+        } else if (response.equals("no")) {
+            findByLastName(students, lastName);
+        } else {
+            System.out.println("Invalid response. Please enter 'yes' or 'no'.");
+        }
     }
 
     public static void findByTeacherLastName(List<Student> students, String teacherLastName) {
@@ -184,8 +201,7 @@ public class SchoolSearch {
 
             do {
                 System.out.println("\nMenu:");
-                System.out.println("S (Student) <lastname> - Пошук класу і вчителя за прізвищем учня");
-                System.out.println("S (Student) <lastname> B (Bus) - Пошук автобусного маршруту за прізвищем учня");
+                System.out.println("S (Student) <lastname> - Пошук класу і вчителя за прізвищем учня з можливістю фільтрації по автобусу");
                 System.out.println("T (Teacher) <lastname> - Пошук учнів за ім'ям вчителя");
                 System.out.println("C (Classroom) <number> -  Пошук учнів за номером класу");
                 System.out.println("B (Bus) <number> - Пошук учнів за номером автобусного маршруту");
@@ -198,9 +214,7 @@ public class SchoolSearch {
                 switch (parts[0]) {
                     case "S":
                         if (parts.length == 2) {
-                            findByLastName(students, parts[1]);
-                        } else if (parts.length == 3 && parts[2].equals("B")) {
-                            findByLastNameWithBus(students, parts[1]);
+                            findByLastNameInteractive(students, parts[1], scanner);
                         } else {
                             System.out.println("Invalid command format for student search.");
                         }
